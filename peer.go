@@ -59,7 +59,16 @@ func (id ID) MatchesPrivateKey(sk ic.PrivKey) bool {
 
 // MatchesPublicKey tests whether this ID was derived from pk
 func (id ID) MatchesPublicKey(pk ic.PubKey) bool {
-	oid, err := IDFromPublicKey(pk)
+	// Try extract an id from an ed25519 pubkey
+	oid, err := IDFromEd25519PublicKey(pk)
+	if err == nil {
+		return oid == id
+	}
+	// ignore errors to test other types of keys
+	log.Info(err, id)
+
+	// we test other keys here
+	oid, err = IDFromPublicKey(pk)
 	if err != nil {
 		return false
 	}
